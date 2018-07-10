@@ -26,5 +26,7 @@ O Candidato a vaga de Back-End deverá implementar um webservice que enviará in
  * O canditado deverá realizar um fork do projeto e commits em cada alteração afim de acompanharmos a evolução do desenvolvimento;
  
  * Faça o máximo que conseguir no tempo que foi estipulado ao solicitar o teste, entregue sua proposta mesmo inacabada;
+ 
+ * Caso não utilize o GIT, nos envie por e-mail os arquivos compactados e com os comentários das implementações;
 
 
