@@ -1,6 +1,6 @@
 # Avaliação para a entrevista de profissionais para as vagas de Programador Editorial
 
-Este repositório contém uma amostra de livro digital que o canditado usuará para implementar os recursos necessários para a avaliação.
+Este repositório contém uma amostra do livro digital que o canditado usará para implementar os recursos necessários para a avaliação.
 
 **FRONT-END**
 
