@@ -1,113 +1,116 @@
 <?php
-      require_once "conexao.php";
+      include_once('Mysql.php');
       require_once "lib/nusoap.php";
   
   $soap = new soap_server;
+  $mysql = new MySQL('host', 'user', 'password', 'database');
   
-  $soap->configureWSDL('Mackenzie Dúvidas', 'http://mackenzie.br/av1/webservice/');
+  $soap->configureWSDL('Mackenzie Mensagens', 'http://mackenzie.br/av1/webservice/');
   
   $soap->wsdl->schemaTargetNamespace = 'http://mackenzie.br/av1/webservice/';
 
 	$soap->register(
-		'createDuvida',
-            array('nome' => 'xsd:string','email' => 'xsd:string','duvida' => 'xsd:string'),
-            array('ok' => 'xsd:int'),
+		'createMensagem',
+            array('nome' => 'xsd:string','email' => 'xsd:string','mensagem' => 'xsd:string','opcao' => 'xsd:string'),
+            array('id' => 'xsd:int'),
             'http://mackenzie.br/av1/webservice/',
             null,
             null,
             null,
-            'Cria um novo registro em banco de dúvidas para ser respondido por email.'
+            'Cria um novo registro em banco de mensgens para ser respondido por email.'
             
 	);
 	
 	$soap->register(
-		'readDuvida',
+		'readMensagem',
             array('id' => 'xsd:int'),
-            array('id' => 'xsd:int','nome' => 'xsd:string','email' => 'xsd:string','duvida' => 'xsd:string'),
+            array('id' => 'xsd:int','nome' => 'xsd:string','email' => 'xsd:string','mensagem' => 'xsd:string','opcao' => 'xsd:string'),
             'http://mackenzie.br/av1/webservice/',
             null,
             null,
             null,
-            'Recupera uma dúvida específica pelo ID.'
+            'Recupera uma mensagem específica pelo ID.'
 	);
 	
       $soap->register(
-		'readAllDuvida',
+		'readAllMensagem',
             array('todas' => 'xsd:string'),
-            array('id' => 'xsd:int','nome' => 'xsd:string','email' => 'xsd:string','duvida' => 'xsd:string'),
+            array('id' => 'xsd:int','nome' => 'xsd:string','email' => 'xsd:string','mensagem' => 'xsd:string','opcao' => 'xsd:string'),
             'http://mackenzie.br/av1/webservice/',
             null,
             null,
             null,
-            'Recupera todas as dúvidas'
+            'Recupera todas as mensagens'
 	);
       
 	$soap->register(
-		'updateDuvida',
-            array('id' => 'xsd:int','nome' => 'xsd:string','email' => 'xsd:string','duvida' => 'xsd:string'),
-            array('ok' => 'xsd:int'),
+		'updateMensagem',
+            array('id' => 'xsd:int','nome' => 'xsd:string','email' => 'xsd:string','mensagem' => 'xsd:string','opcao' => 'xsd:string'),
+            array('ok' => 'xsd:boolean'),
             'http://mackenzie.br/av1/webservice/',
             null,
             null,
             null,
-            'Atualiza uma dúvida específica pelo ID.'
+            'Atualiza uma mensagem específica pelo ID.'
 	);
 	
 	$soap->register(
-		'deleteDuvida',
+		'deleteMensagem',
             array('id' => 'xsd:int'),
-            array('ok' => 'xsd:int'),
+            array('ok' => 'xsd:boolean'),
             'http://mackenzie.br/av1/webservice/',
             null,
             null,
             null,
-            'Exclui uma dúvida específica enviando o ID.'
+            'Exclui uma mensagem específica enviando o ID.'
 	);
  
-function createDuvida($nome, $email, $duvida){
-            $con = conectar();
-		$sql = "INSERT INTO duvidas (nome, email, duvida) VALUES (null, '".$nome."', '".$email."', '".$duvida."')";
-		$result = mysqli_query($con,$sql);
+function createMensagem($nome, $email, $mensagem, $opcao){
+           try{
+      		$mysql->insert('mensagens', array('nome' => $nome, 'email' => $email, 'mensagem' => $mensagem, 'opcao' => $opcao));
+      		$result = $mysql->insert_id(); 
+      	}catch(Exception $e){
+      		echo 'Erro: ', $e->getMessage();
+      	}
+            
 		return $result;
 }
 
-function readDuvida($id){
-            $con = conectar();
-		$sql = "SELECT * FROM duvidas WHERE id='".$id."'";
-		$result = mysqli_query($con,$sql);
-		return $result;
+function readMensagem($id){
+            try{
+      		$post = $mysql->where('id', $id)->get('mensagens');
+      		$return = ($post);
+      	}catch(Exception $e){
+      		echo 'Erro: ', $e->getMessage();
+      	}
 }
 
-function readAllDuvida($id){
-            $con = conectar();
-		$sql = "select * from duvidas";
-		$result = mysqli_query($con,$sql);
-				
-		$duvidas = array();
-		
-		$linha = mysqli_fetch_assoc($result);
-		$total = mysqli_num_rows($result);
-				
-		$i =0;
-		if($total > 0) {
-              while ($row = mysqli_fetch_assoc($result)){
-                  $produtos[++$i] = $row;
-              }
-		}
-		return $produtos;
+function readAllMensagem($id){
+            try{
+      		$posts = $mysql->get('mensagens');
+      	      $qtde = $mysql->num_rows();
+      	}catch(Exception $e){
+      		echo 'Erro: ', $e->getMessage();
+      	}
+            
+            return $result;
 }
 
-function updateDuvida($id, $nome, $email, $duvida){
-            $con = conectar();
-            $sql =  "UPDATE duvidas SET nome='".$nome."', email='".$email."', duvida='".$duvida."' WHERE id=".$id;
-		$result = mysqli_query($con,$sql);
-		return $result;
+function updateMensagem($id, $nome, $email, $mensagem, $opcao){
+            try{
+      		$result = $mysql->where('id', $id)->update('mensagens',array('nome' => $nome, 'email' => $email, 'mensagem' => $mensagem, 'opcao' => $opcao));
+      	}catch(Exception $e){
+      		echo 'Erro: ', $e->getMessage();
+      	}
+            return $result;
 }
 
-function deleteDuvida($id){
-            $con = conectar();
-		$sql = "DELETE FROM duvidas WHERE id='".$id."'";
-		$result = mysqli_query($con,$sql);
+function deleteMensagem($id){
+            try{
+		   $result = $mysql->where('id', $id)->delete('mensagens');
+      	}catch(Exception $e){
+      	   echo 'Erro: ', $e->getMessage();
+      	}
 		return $result;
 }
 

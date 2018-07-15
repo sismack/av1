@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -11,6 +11,13 @@
 <link rel="stylesheet" href="style/player.css" />
 <link rel="stylesheet" href="style/phoneTemplate.css" />
 <script src="javascript/jquery-1.9.1.min.js"></script>
+
+<!-- Christian Zornoff adicional -->
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
 </head>	
 <body>
 <script src="javascript/config.js"></script>
@@ -99,6 +106,108 @@ animation: flickerAnimation 2s infinite;
 }
    
    </style>
+    <div class="duvida" style='display: table; color: #ffffff; height: 45px; position: absolute; top: 0px; left: 50%; right: 280px; z-index: 9999'>
+          <div style='display: table-cell; vertical-align: middle;' ><i class="fas fa-chalkboard-teacher"></i> fale conosco</div>
+    </div>
+    
+    <div class="modal fade bg-alert" tabindex="-1" role="dialog" id="modalAtencao">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content panel-danger">
+          <div class="modal-header panel-heading">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h2 class="modal-title">Atenção</h2>
+          </div>
+          <div class="modal-body">
+            <p>Para enviar suas dúvidas clique em <span style="display: inline-block;"><i class="fas fa-chalkboard-teacher"></i> fale conosco</span> acima.</p>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+      <div class="modal fade bg-alert" tabindex="-1" role="dialog" id="modalRetorno">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content panel-success">
+          <div class="modal-header panel-heading">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h2 class="modal-title">Envio</h2>
+          </div>
+          <div class="modal-body" id="Retorno">
+            
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+      <div class="modal fade" tabindex="-1" role="dialog" id="modalDuvidas">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content panel-danger">
+          <div class="modal-header panel-heading">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h2 class="modal-title">Entre em contato.</h2>
+          </div>
+          <div class="modal-body">
+              <form id="formMensagem">
+                  <div class="form-group">
+                  <label for="duvidaOpcao">Sua Opção</label>
+                  <select class="form-control" id="duvidaOpcao" name="opcao">
+                    <option>Dúvidas</option>
+                    <option>Elogios</option>
+                    <option>Sugestões</option>
+                    <option>Reclamações</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="duvidaNome">Nome</label>
+                  <input type="text" class="form-control" id="duvidaNome" placeholder="Nome" name="nome">
+                </div>
+                <div class="form-group">
+                  <label for="duvidaEmail">E-mail</label>
+                  <input type="email" class="form-control" id="duvidaEmail" placeholder="E-mail" name="mail">
+                </div>
+                <div class="form-group">
+                  <label for="duvidaMensagem">Sua mensagem</label>
+                  <textarea class="form-control" id="duvidaMensagem" rows="5" name="mensagem"></textarea>
+                </div>
+                <button type="button" class="btn btn-default" id="EnviarMensagem">Enviar</button>
+          </form>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+      
+    <script>
+      //mostra modal inicial informando do uso do envio de mensagens
+      $(document).ready(function() {
+          $('#modalAtencao').modal('show');
+      });
+      //mostra formulário de envio de mensagem
+      $(".duvida").click(function() {
+          $('#modalDuvidas').modal('show');
+      });
+
+      $("#EnviarMensagem").click(function(ev){
+	 $('#modalDuvidas').modal('hide');
+	var Reg = $("#formMensagem").serialize();
+
+	$.ajax ({
+		type: "POST",
+		contentType: 'application/x-www-form-urlencoded; charset=ISO-8859-1',
+		url: "./mail/email.php",
+		data: Reg,
+		dataType: "html",
+		success: function(data) {
+                  $("#modalRetorno").modal('show');
+			$("#Retorno").html(data);
+		},
+		beforeSend: function(jqXHR) {
+			jqXHR.overrideMimeType('application/x-www-form-urlencoded; charset=ISO-8859-1');
+		}
+	});
+	
+	ev.preventDefault();
+
+});
+    </script>
 </body>
 
 </html>
