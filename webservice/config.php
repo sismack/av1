@@ -1,5 +1,13 @@
 <?php
-	mysql_connect('localhost', 'root','root') or die ('Erro ao conectar com o servidor');
-	mysql_select_db('livros') or die ('Erro ao selecionar o banco de dados');
+	$servername = "localhost";
+	$username = "root";
+	$password = "123";
+	$dbname = "mackenzie";
+
+	$conn = mysqli_connect($servername, $username, $password, $dbname);
+	
+	if (!$conn) {
+		die("Falha ao conectar o banco" . mysqli_connect_error());
+}
 	
 ?>
