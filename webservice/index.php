@@ -1,10 +1,10 @@
 <?php
 
 	require_once('config.php');
-	require_once('info.json');
 	
-	$url = 'info.json'; 
+	$url = '../index.php'; 
 	$json_str = file_get_contents($url); 
+	//$obj = json_decode(curl_exec($ch));
 	$obj = json_decode($json_str);
 	
 	echo "<br>";
