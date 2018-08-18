@@ -17,12 +17,18 @@
 	echo "<br>";
 	echo "<br>";
 	
-	$query = "INSERT INTO livros (titulo, autor, isbn13, ano) VALUES ('$obj->titulo', '$obj->autor', '$obj->isbn13', $obj->ano)";
+	$queryChecaarLivro = "SELECT * FROM livros WHERE isbn13 = $obj->isbn13 "; 
 	
-	if (mysqli_query($conn, $query)) {
-		echo "Livro Inserido com sucesso";
+	if (mysqli_query($conn, $queryChecaarLivro)) {
+		echo "Livro já inserido no banco.";
 	} else {
-		echo "Error: " . $query . "<br>" . mysqli_error($conn);
+		$queryInsertLivro = "INSERT INTO livros (titulo, autor, isbn13, ano) VALUES ('$obj->titulo', '$obj->autor', '$obj->isbn13', $obj->ano)";
+	
+		if (mysqli_query($conn, $queryInsertLivro)) {
+			echo "Livro Inserido com sucesso";
+		} else {
+		echo "Erro Inserir: " . $queryInsertLivro . "<br>" . mysqli_error($conn);
+		}
 	}
 	
 	mysqli_close($conn);
