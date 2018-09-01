@@ -1,0 +1,14 @@
+#game {
+	position: absolute;
+	margin-left: 55%;
+	display: inline;
+	z-index: 9999;
+	margin-top: 5px;
+}
+#mail {
+	position: absolute;
+	margin-left: 45%;
+	display: inline;
+	z-index: 9999;
+	margin-top: 5px;
+}
