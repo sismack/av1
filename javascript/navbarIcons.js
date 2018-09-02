@@ -1,6 +1,6 @@
 $('#mail').click(function (){
-	window.open('mail.html')
+	window.open('mail.php')
 })
 $('#game').click(function (){
-	window.open('jogo.html')
+	window.open('jogo.php')
 })
