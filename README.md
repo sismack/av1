@@ -2,7 +2,7 @@
 
 Este repositório contém uma amostra do livro digital que o candidato usará para implementar os recursos necessários para a avaliação.
 
-**FRONT-END**
+***FRONT-END***
 
 O Candidato a vaga de Front-End deverá implementar um recurso no livro digital deste repositório, utilizando ao menos: HTML5, Javascript e CSS.
 
