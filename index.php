@@ -99,6 +99,12 @@ animation: flickerAnimation 2s infinite;
 }
    
    </style>
+   <div class="navbarIcons">
+     <img src="files/extfile/mail-icon.png" id="mail" height="40px" width="40px">
+     <img src="files/extfile/game-icon.png" id="game" height="40px" width="40px">
+   </div>
+   <link rel="stylesheet" type="text/css" href="style/navbarIcons.css">
+   <script src="javascript/navbarIcons.js"></script>
 </body>
 
 </html>
