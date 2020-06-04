@@ -51876,7 +51876,6 @@ var ThumbnailCell = Class({
     },
     setHighLightThumb: function (b) {
         this.index == b && this.item.addClass("highlight")
-        console.log("thumb: " + this.item)
     },
     clearHighLight: function () {
         this.item.removeClass("highlight")
@@ -52206,7 +52205,6 @@ var GalleryCell = Class({
     },
     initEvent: function () {
         this.item.onTap(function () {
-            //console.log(this.item[0].children[0].src)
             var src = this.item[0].children[0].src;
             $("#imgFocus").attr("src", src);
         }.bind(this))
@@ -52400,7 +52398,7 @@ var GalleryFrame = Class({
             });
             this.height = 220
         } else this.gallerySwiper.css({
-            width: "auto",
+            width: "70vw",
             //margin: "20px"
         }), this.height = 254;
         this.refresh();
@@ -52521,8 +52519,8 @@ var GalleryForm = Class({
     },
     initHtml: function () {
         this.stage = $("<div id='gallery' class='gallery_win10'></div>");
+        this.stage.append(this.close);
         this.stage.append(this.galleryFocus);
-        this.galleryFocus.append(this.close);
         this.stage.append(this.gallerySwiper);
         this.parent.append(this.stage);
     }
@@ -53103,7 +53101,7 @@ Class("PCExtendedBar", {
         })
     }
 }).extend("ExtendedBar");
-/* var CatalogThumbnailItem = Class({
+var CatalogThumbnailItem = Class({
     create: function (b, c, d) {
         this.itemContent = b;
         this.dockMenuContent = c;
@@ -53218,8 +53216,8 @@ Class("PCExtendedBar", {
     onResize: function () {
         this.dockMenu.resize()
     }
-}); */
-/* var CatalogThumbnailBar = Class({
+});
+var CatalogThumbnailBar = Class({
     create: function (b) {
         this.menu = $("<div class='menu'></div>");
         this.initMenu();
@@ -53354,9 +53352,9 @@ Class("PCExtendedBar", {
     getBottomHeight: function () {
         return !0 == this.visible ? 110 : 0
     }
-}); */
+});
 
-/* var CatalogGalleryItem = Class({
+var CatalogGalleryItem = Class({
     create: function (b, c, d) {
         this.itemContent = b;
         this.dockMenuContent = c;
@@ -53608,7 +53606,7 @@ var CatalogGalleryBar = Class({
     getBottomHeight: function () {
         return !0 == this.visible ? 110 : 0
     }
-}); */
+});
 
 var GuidToolbar = Class({
     create: function (b) {
