@@ -7634,6 +7634,7 @@ var WebScheme = {
             getConfigValue("normalPath", "files/page/");
         bookConfig.largePath = getConfigValue("largePath", "files/large/");
         bookConfig.thumbPath = getConfigValue("thumbPath", "files/thumb/");
+        bookConfig.galleryPath = getConfigValue("galleryPath", "files/gallery/");
         bookConfig.FlipStyle = getConfigValue("FlipStyle", "flip");
         bookConfig.showDoublePage = getConfigValue("autoDoublePage", !0);
         bookConfig.QRPath = getConfigValue("QRPath", "files/extfile/QRURL.png");
@@ -7870,6 +7871,8 @@ var isBool = function (b) {
                     break;
                 case "thumb":
                     f = g.t
+                case "gallery":
+                    f = g.t
             }
             if (void 0 == f) switch (c) {
                 case "normal":
@@ -7878,6 +7881,8 @@ var isBool = function (b) {
                     return f = bookConfig.largePath + b + d;
                 case "thumb":
                     return f = bookConfig.thumbPath + b + d
+                case "gallery":
+                    return f = bookConfig.galleryPath + b + d
             }
             return void 0 == f ? "" : f
         }
@@ -7889,6 +7894,8 @@ var isBool = function (b) {
                     bookConfig.largePath + b + d, void 0 == f ? "" : f;
             case "thumb":
                 return f = bookConfig.thumbPath + b + d, void 0 == f ? "" : f
+            case "gallery":
+                return f = bookConfig.galleryPath + b + d, void 0 == f ? "" : f
         }
     },
     fillImageAfterLoaded = function (b, c, d) {
@@ -8517,6 +8524,15 @@ var BookInfo = Class({
                 0 < f.length && b.push(f)
             }
             return b
+        },
+        getGalleryImages: function () {
+            //var imgCount = bookConfig.imgCount;
+            for(var imgCount = [], i=1; i<=bookConfig.imgCount; i++){
+                var d = [];
+                d.push(i);
+                imgCount.push(d);
+            }
+            return imgCount;
         },
         getPagesByIndex: function (b) {
             function c(b) {
@@ -52030,6 +52046,7 @@ var ThumbnailFrame = Class({
     refreshSwiper: function (b) {
         this.length = 0;
         for (var c = BookInfo.getThumbnailPages(), d = 0; d < c.length; d++) this.addItem(b, c[d]);
+        //for(var c = BookInfo.getGalleryImages(), d = 0; d<c; d++) this.addItem(b,c);
         b.css("width", this.length + "px")
     },
     mergeAll: function () {
@@ -52050,7 +52067,7 @@ var ThumbnailFrame = Class({
         d.setPosition(this.length, this.direction);
         this.length += d.length;
         this.length += d.margin;
-        this.itemArray.push(d)
+        this.itemArray.push(d);
     },
     clearHighLight: function () {
         $(".highlight").removeClass("highlight")
@@ -52132,7 +52149,181 @@ var ThumbnailForm = Class({
         this.parent.append(this.stage)
     }
 }).extend(ThumbnailFrame);
-var GalleryFrame = Class(/* {
+
+var GalleryCell = Class({
+    create: function (b, c) {
+        this.parent = b;
+        this.margin = c.margin;
+        this.index = c.index;
+        this.imageWidth = c.imageWidth;
+        this.imageHeight = c.imageHeight;
+        this.item = $("<div class='item'></div>");
+        this.initHtml();
+        this.initEvent();
+        this.onResize()
+    },
+    onResize: function () {
+        this.length = this.imageWidth;
+        this.image.css({
+            width: this.imageWidth + "px",
+            height: this.imageHeight + "px"
+        })
+    },
+    initHtml: function () {
+        this.initStructure();
+        this.item.append(this.image);
+        //this.item.append(this.title);
+        this.parent.append(this.item)
+    },
+    initStructure: function () {
+        this.image = $("<img/>");
+        //this.title = $("<p class='title'>" + getShownPageNumber(this.index) + "</p>");
+        this.loading()
+    },
+    loading: function () {
+        this.image.css({
+            "background-color": "#ffffff",
+            "background-image": "url(" + uiBaseURL + "loading.gif)",
+            "background-repeat": "no-repeat",
+            "background-position": "center"
+        })
+    },
+    unLoading: function () {
+        this.image.css({
+            "background-image": ""
+        })
+    },
+    setStyle: function (b) {
+        this.item.css(b)
+    },
+    addClass: function (b) {
+        this.item.addClass(b)
+    },
+    removeClass: function (b) {
+        this.item.removeClass(b)
+    },
+    initEvent: function () {
+        this.item.onTap(function () {
+            gotoPageFun(this.index)
+        }.bind(this))
+    },
+    fillContent: function () {
+        var b = function (b) {
+            this.image.attr("src", b);
+            this.image.css({
+                width: this.imageWidth + "px",
+                height: this.imageHeight + "px"
+            });
+            this.unLoading()
+        }.bind(this);
+        fillImageAfterLoaded(this.index, "gallery", b)
+    },
+    getDom: function () {
+        return this.item
+    },
+    fission: function () {
+        //this.title.show();
+        this.item.addClass("focus")
+    },
+    merge: function () {
+        //this.title.hide();
+        this.item.removeClass("focus")
+    },
+    setHighLight: function (b) {
+        this.index ==
+            b && this.item.addClass("highlight")
+    },
+    clearHighLight: function () {
+        this.item.removeClass("highlight")
+    }
+});
+var GalleryItem = Class({
+    create: function (b, c) {
+        this.parent = b;
+        this.margin = c.margin;
+        this.pages = c.pages;
+        this.parm = c;
+        this.cells = [];
+        this.initHtml();
+        this.onResize()
+    },
+    onResize: function () {
+        for (var b = this.length = 0; b < this.cells.length; b++) this.length += this.cells[b].length;
+        this.item.css({
+            width: this.length + "px"
+        })
+    },
+    initHtml: function () {
+        this.item = $("<div class='item_focus focus'></div>");
+        this.initStructure();
+        this.addItem();
+        //this.item.append(this.title);
+        this.parent.append(this.item)
+    },
+    initStructure: function () {
+        this.initCells();
+        for (var b = getShownPageNumber(this.cells[0].index), c = 1; c < this.cells.length; c++) b = b + "-" + getShownPageNumber(this.cells[c].index);
+        //this.title = $("<p class='title'>" + b + "</p>")
+    },
+    addItem: function () {
+        for (var b = this.cells.length, c = 0; c < b; c++) this.item.append(this.cells[c].getDom())
+    },
+    fillContent: function () {
+        for (var b = this.cells.length, c = 0; c < b; c++) this.cells[c].fillContent(0)
+    },
+    initCells: function () {
+        for (var b = 0; b < this.pages.length; b++) {
+            var c = new GalleryCell(this.item, {
+                index: this.pages[b],
+                imageWidth: this.parm.imageWidth,
+                imageHeight: this.parm.imageHeight,
+                margin: this.parm.margin
+            });
+            this.cells.push(c)
+        }
+    },
+    setPosition: function (b, c) {
+        this.item.css(c, b + "px")
+    },
+    fission: function () {
+        this.item.removeClass("focus");
+        1 == this.cells.length ? (BookInfo.isLeftPage(this.cells[0].index, !0) ? this.cells[0].setStyle({
+            left: "-3px",
+            right: "auto"
+        }) : this.cells[0].setStyle({
+            right: "-3px",
+            left: "auto"
+        }), this.cells[0].fission()) : (this.item.removeClass("focus"), this.cells[0].fission(), this.cells[1].fission(), this.cells[0].setStyle({
+            left: "-3px",
+            right: "auto"
+        }), this.cells[1].setStyle({
+            right: "-3px",
+            left: "auto"
+        }), this.cells[0].removeClass("left"), this.cells[1].removeClass("right"))
+    },
+    merge: function () {
+        1 == this.cells.length ? (this.cells[0] && this.cells[0].setStyle({
+            left: "0",
+            right: "0"
+        })) : (this.item.addClass("focus"), this.cells[0].merge(), this.cells[1].merge(), this.cells[0].setStyle({
+            left: "0",
+            right: "auto"
+        }), this.cells[1].setStyle({
+            right: "0",
+            left: "auto"
+        }), this.cells[0].addClass("left"), this.cells[1].addClass("right"))
+    },
+    setHighLight: function (b) {
+        for (var c = 0; c < this.cells.length; c++) this.cells[c].setHighLight(b);
+        this.item.addClass("highlight")
+    },
+    clearHighLight: function () {
+        this.item.removeClass("highlight");
+        for (var b = 0; b < this.cells.length; b++) this.cells[b].clearHighLight()
+    }
+});
+
+var GalleryFrame = Class({
     create: function (b) {
         this._super(b);
         this.direction = rightToLeft ? Direction.right : Direction.left;
@@ -52165,6 +52356,7 @@ var GalleryFrame = Class(/* {
         this.initSwiper()
     },
     initSwiper: function () {
+        this.galleryFocus = $("<div class='galleryFocus'></div>");
         this.gallerySwiper = $("<div class='gallerySwiper stage'></div>");
         this.gallerySwiperList = $("<div class='swiper'></div>");
         this.progress = $("<div class='progress'></div>");
@@ -52201,10 +52393,10 @@ var GalleryFrame = Class(/* {
             margin: "20px"
         }), this.height = 254;
         this.refresh();
-        this.stage.css({
+        /* this.stage.css({
             top: (windowHeight - this.height) / 2 + "px",
             height: this.height + "px"
-        });
+        }); */
         this.taskList.setLargeLength(15)
     },
     refresh: function () {
@@ -52212,7 +52404,8 @@ var GalleryFrame = Class(/* {
     },
     refreshSwiper: function (b) {
         this.length = 0;
-        for (var c = BookInfo.getThumbnailPages(), d = 0; d < c.length; d++) this.addItem(b, c[d]);
+        //for (var c = BookInfo.getThumbnailPages(), d = 0; d < c.length; d++) this.addItem(b, c[d]);
+        for(var c = BookInfo.getGalleryImages(), d=0; d<c.length; d++) this.addItem(b,c[d]);
         b.css("width", this.length + "px")
     },
     mergeAll: function () {
@@ -52229,7 +52422,7 @@ var GalleryFrame = Class(/* {
         };
         d.imageWidth = parseInt(bookConfig.largePageWidth * d.imageHeight / bookConfig.largePageHeight);
         d.length = d.imageWidth;
-        d = new ThumbnailItem(b, d);
+        d = new GalleryItem(b, d);
         d.setPosition(this.length, this.direction);
         this.length += d.length;
         this.length += d.margin;
@@ -52287,6 +52480,7 @@ var GalleryFrame = Class(/* {
             c = parseInt(c / d),
             d = Math.min(c + b, this.itemArray.length),
             c = Math.max(0, c);
+        
         return [c, d]
     },
     show: function () {
@@ -52302,8 +52496,8 @@ var GalleryFrame = Class(/* {
         this.stage.hide();
         this.interval && this.interval.stop()
     }
-} */).extend(ThumbnailForm);
-var GalleryForm = Class(/* {
+}).extend(FormFrame);
+var GalleryForm = Class({
     create: function (b) {
         this.height = 274;
         this._super(b)
@@ -52314,7 +52508,7 @@ var GalleryForm = Class(/* {
         this.stage.append(this.gallerySwiper);
         this.parent.append(this.stage)
     }
-} */).extend(GalleryFrame);
+}).extend(GalleryFrame);
 var toolbar_icons = {
     First: "iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyFpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDE0IDc5LjE1MTQ4MSwgMjAxMy8wMy8xMy0xMjowOToxNSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpERjU3M0NFNDJEMUUxMUU2OTNGREY0QkU2N0Y1QTAzNyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDpERjU3M0NFNTJEMUUxMUU2OTNGREY0QkU2N0Y1QTAzNyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkRGNTczQ0UyMkQxRTExRTY5M0ZERjRCRTY3RjVBMDM3IiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkRGNTczQ0UzMkQxRTExRTY5M0ZERjRCRTY3RjVBMDM3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+QU3iOQAAAFhJREFUeNrs1UsKACAIBNDm/oc2OoC/kaFFuQvlEWEKM1uKwIc9+BwQ1Gd5Ci6jHbiFVuE2WoEpNINpNIJHqAePvCs3lr6xtCukfSz9edJZMZ5uD2+QLcAAxz5e1TZlSx4AAAAASUVORK5CYII=",
     prev: "iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyFpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDE0IDc5LjE1MTQ4MSwgMjAxMy8wMy8xMy0xMjowOToxNSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpGQUYwMDBFNjJEMUUxMUU2ODVCMUMzMzE4RTA1MDc1RCIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDpGQUYwMDBFNzJEMUUxMUU2ODVCMUMzMzE4RTA1MDc1RCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZBRjAwMEU0MkQxRTExRTY4NUIxQzMzMThFMDUwNzVEIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkZBRjAwMEU1MkQxRTExRTY4NUIxQzMzMThFMDUwNzVEIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+ujeirwAAAFZJREFUeNrs1dsJACAMQ1Gz/9AVB1D78CKI/ZaDSExlZo0YfTgLj8M6DbvRCBxCvXAY9cApdAen0RVcQmdwJdi6cmP0jdFUoDlGfx7aFWi7Pb5BugADABZuUNVXsdtSAAAAAElFTkSuQmCC",
@@ -53143,6 +53337,261 @@ var CatalogThumbnailBar = Class({
         return !0 == this.visible ? 110 : 0
     }
 });
+
+var CatalogGalleryItem = Class({
+    create: function (b, c, d) {
+        this.itemContent = b;
+        this.dockMenuContent = c;
+        this.index = d;
+        this.item = $("<div class='galleryItem'></div>");
+        this.rect = $("<div class='galleryRect'></div>");
+        this.caption = $("<div class='dockMenuItemCaption'></div>");
+        this.captionAfter = $("<div class='dockMenuItemCaptionAfter'></div>");
+        this.itemContent.append(this.item);
+        this.item.append(this.rect);
+        this.item.append(this.caption);
+        this.caption.after(this.captionAfter);
+        this.initEvent()
+    },
+    initItem: function (b,
+        c) {
+        this.dockMenu = new DockMenu(this.dockMenuContent, b, c);
+        this.initCaption(b, c)
+    },
+    addPrev: function () {
+        var b = $("<div class='dockMenuItem dockMenuItemShadow dockButton'></div>");
+        b.append("<div></div>");
+        b.append("<img src='" + uiBaseURL + "slide_leftButton.png'/>");
+        b.click(function () {
+            gallery.gotoItemByIndex(this.index - 1);
+            return !1
+        }.bind(this));
+        this.dockMenu.addObj(b, "before")
+    },
+    addNext: function () {
+        var b = $("<div class='dockMenuItem dockMenuItemShadow dockButton'></div>");
+        b.append("<div></div>");
+        b.append("<img src='" +
+            uiBaseURL + "slide_rightButton.png'/>");
+        b.click(function () {
+            gallery.gotoItemByIndex(this.index + 1);
+            return !1
+        }.bind(this));
+        this.dockMenu.addObj(b, "after")
+    },
+    initCaption: function (b, c) {
+        var d = BookInfo.getGalleryImages();
+        b = 1 == d[b].length ? d[b][0] : Math.min(d[b][0], d[b][1]);
+        c = 1 == d[c].length ? d[c][0] : Math.max(d[c][0], d[c][1]);
+        this.fromIndex = b;
+        this.toIndex = c;
+        1 < b && (rightToLeft ? this.addNext() : this.addPrev());
+        c < bookConfig.totalPageCount && (rightToLeft ? this.addPrev() : this.addNext());
+        this.fromIndex != this.toIndex ? this.caption.html(rightToLeft ?
+            this.toIndex + "-" + this.fromIndex : this.fromIndex + "-" + this.toIndex) : this.caption.html(this.fromIndex);
+        $(this.caption).css({
+            position: "absolute",
+            height: "16px",
+            top: "-30px",
+            "white-space": "nowrap",
+            width: "auto",
+            "-webkit-transform": "translate(-50%, 0)",
+            "-moz-transform": "translate(-50%, 0)",
+            "-ms-transform": "translate(-50%, 0)",
+            "-o-transform": "translate(-50%, 0)",
+            transform: "translate(-50%, 0)",
+            left: "50%"
+        });
+        $(this.caption).css({
+            "margin-left": -$(this.caption).outerWidth() / 2
+        });
+        $(this.captionAfter).css({
+            position: "absolute",
+            top: "-5px",
+            left: "50%",
+            "margin-left": "-8px",
+            "background-image": "url(" + uiBaseURL + "span.png)"
+        })
+    },
+    initEvent: function () {
+        this.choosedColor = "#505a60";
+        this.item.bind(_event._enter, function () {
+            this.rect.css("background", "#ffffff")
+        }.bind(this));
+        this.item.bind(_event._leave, function () {
+            this.rect.css("background", this.choosedColor)
+        }.bind(this));
+        this.item.bind(_event._end, function () {
+            gallery.gotoItemByIndex(this.index)
+        }.bind(this));
+        this.item.bind(_event._over, function () {
+            this.caption.css("display", "block");
+            this.captionAfter.css("display",
+                "block")
+        }.bind(this));
+        this.item.bind(_event._leave, function () {
+            this.caption.hide();
+            this.captionAfter.hide()
+        }.bind(this))
+    },
+    show: function () {
+        this.rect.css("background", "#ffffff");
+        this.choosedColor = "#ffffff";
+        this.dockMenu.show()
+    },
+    hide: function () {
+        this.rect.css("background", "#505a60");
+        this.choosedColor = "#505a60";
+        this.dockMenu.hide()
+    },
+    clearHighLight: function () {
+        this.dockMenu.clearHighLight()
+    },
+    setHighLight: function (b) {
+        this.dockMenu.setHighLight(b)
+    },
+    onResize: function () {
+        this.dockMenu.resize()
+    }
+});
+
+var CatalogGalleryBar = Class({
+    create: function (b) {
+        this.menu = $("<div class='menu'></div>");
+        this.initMenu();
+        b.append(this.menu)
+    },
+    initMenu: function () {
+        this.visible = !1;
+        this.height = 170;
+        this.dockMenuContent = $("<div class='dockMenuContent'></div>");
+        this.galleryItemContent = $("<div class='galleryItemContent'></div>");
+        this.dockMenuContent.css({
+            width: windowWidth - 50 + "px"
+        });
+        this.menu.append(this.dockMenuContent);
+        this.menu.append(this.galleryItemContent);
+        this.addItem()
+    },
+    addItem: function () {
+        this.itemArray = [];
+        var b = BookInfo.getGalleryImages(),
+            c = parseInt(b.length / 10);
+        0 != b.length % 10 && (c += 1);
+        for (var d = 0; d < c; d++) {
+            var f = rightToLeft ? c - d - 1 : d,
+                g = new CatalogGalleryItem(this.galleryItemContent, this.dockMenuContent, d),
+                h = 10 * f,
+                f = Math.min(10 * (f + 1) - 1, b.length - 1);
+            g.initItem(h, f);
+            this.itemArray.push(g)
+        }(this.highLightItem = this.currentItem = this.itemArray[rightToLeft ? c - 1 : 0]) && this.highLightItem.setHighLight(1);
+        this.highLightItem && this.highLightItem.show()
+    },
+    gotoItemByIndex: function (b) {
+        this.currentItem && this.currentItem.index !==
+            b && (this.currentItem.hide(), this.itemArray[b].show(), this.currentItem = this.itemArray[b])
+    },
+    onResize: function () {
+        var b = 1,
+            c = 10 * (140 * bookConfig.largePageWidth / bookConfig.largePageHeight + 10);
+        origin = 0;
+        c > windowWidth - 50 && (b = (windowWidth - 50) / c, origin = parseInt(100 * (1 - (windowWidth - 50) / c) / 2));
+        this.dockMenuContent.css({
+            "-webkit-transform": "scale3d(" + b + "," + b + ",1)",
+            "-moz-transform": "scale3d(" + b + "," + b + ",1)",
+            "-ms-transform": "scale3d(" + b + "," + b + ",1)",
+            "-o-transform": "scale3d(" + b + "," + b + ",1)",
+            transform: "scale3d(" + b + "," +
+                b + ",1)",
+            "-webkit-transform-origin": "50% 100%",
+            "-moz-transform-origin": "50% 100%",
+            "-ms-transform-origin": "50% 100%",
+            "-o-transform-origin": "50% 100%",
+            "transform-origin": "50% 100%"
+        });
+        this.dockMenuContent.css({
+            width: windowWidth - 50 + "px"
+        });
+        this.galleryItemContent.css({
+            "-webkit-transform": "scale3d(" + b + "," + b + ",1)",
+            "-moz-transform": "scale3d(" + b + "," + b + ",1)",
+            "-ms-transform": "scale3d(" + b + "," + b + ",1)",
+            "-o-transform": "scale3d(" + b + "," + b + ",1)",
+            transform: "scale3d(" + b + "," + b + ",1)",
+            "-webkit-transform-origin": "50% 100%",
+            "-moz-transform-origin": "50% 100%",
+            "-ms-transform-origin": "50% 100%",
+            "-o-transform-origin": "50% 100%",
+            "transform-origin": "50% 100%"
+        });
+        for (b = 0; b < this.itemArray.length; b++) this.itemArray[b].onResize()
+    },
+    getOccuHeight: function () {
+        return 110
+    },
+    transparent: function () {
+        this.menu.animate({
+            opacity: 0,
+            "z-index": -1
+        }, 200)
+    },
+    noTransparent: function () {
+        this.menu.animate({
+            opacity: 1,
+            "z-index": 10
+        }, 200)
+    },
+    mergeAll: function () {},
+    fissionAll: function () {},
+    getShowStatu: function () {
+        return this.visible
+    },
+    clearHighLight: function () {
+        this.highLightItem &&
+            this.highLightItem.clearHighLight()
+    },
+    setHighLight: function (b) {
+        for (var c = 0; c < this.itemArray.length; c++)
+            if (b <= this.itemArray[c].toIndex && b >= this.itemArray[c].fromIndex) {
+                this.gotoItemByIndex(c);
+                this.itemArray[c].setHighLight(b);
+                this.highLightItem = this.currentItem;
+                break
+            }
+    },
+    fillContent: function () {
+        this.setHighLight(this.highLightItem.index)
+    },
+    showOrHide: function () {
+        !1 === this.visible ? this.show() : this.hide();
+        catalogBook && catalogBook.showOrHideLiteThumbnail()
+    },
+    show: function () {
+        this.showing = this.visible = !0;
+        this.menu.animate.delay(this.menu,
+            100, [{
+                bottom: -105 + toolBar.getBottomHeight() + "px"
+            }, 300])
+    },
+    hide: function () {
+        this.menu.animate.delay(this.menu, 100, [{
+            bottom: -this.height + "px"
+        }, 300]);
+        this.showing = this.visible = !1
+    },
+    setPosition: function () {},
+    getHeight: function () {
+        return this.getTopHeight() + this.getBottomHeight()
+    },
+    getTopHeight: function () {
+        return 0
+    },
+    getBottomHeight: function () {
+        return !0 == this.visible ? 110 : 0
+    }
+});
+
 var GuidToolbar = Class({
     create: function (b) {
         this.$bar = $("<div class='catalog_simple_bar'></div>");
