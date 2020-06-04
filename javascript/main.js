@@ -7907,6 +7907,8 @@ var isBool = function (b) {
                 }, function () {});
                 else $("<img src='" + f + "'/>").on("load", function () {
                     d && d(f)
+                    
+                    //if($(b).hasClass())
                 });
             else !window.userList &&
                 1 < passwardType() && loadJavascript(bookConfig.userListPath, function () {
@@ -45340,7 +45342,7 @@ var DoubleFlipBook = Class({
             this.showOrHideGrayShadow(b);
             this.resetBookShadow(b);
             this.flipping || (this.openShownSlider(), this.openShownMedia());
-            bookConfig.ThumbnailsButtonVisible && (thumbnail.clearHighLight(), thumbnail.setHighLight(this.currentPageIndex));
+            bookConfig.ThumbnailsButtonVisible && (thumbnail.clearHighLight(), thumbnail.setHighLightThumb(this.currentPageIndex));
             this.bmt && this.bmt.refresh();
             resizeBookAfterFlip && !this.flipping && window.setTimeout(function () {
                 onStageResize()
@@ -45482,7 +45484,7 @@ var DoubleFlipBook = Class({
             this.addSearchHighlight();
             this.resetBookShadow(b);
             this.flipping || (this.openShownSlider(), this.openShownMedia());
-            bookConfig.ThumbnailsButtonVisible && (thumbnail.clearHighLight(), thumbnail.setHighLight(this.currentPageIndex));
+            bookConfig.ThumbnailsButtonVisible && (thumbnail.clearHighLight(), thumbnail.setHighLightThumb(this.currentPageIndex));
             this.bmt && this.bmt.refresh();
             resizeBookAfterFlip && !this.flipping && window.setTimeout(function () {
                 onStageResize()
@@ -45551,7 +45553,7 @@ var DoubleFlipBook = Class({
             this.addSearchHighlight();
             this.flipping || (this.openShownSlider(), this.openShownMedia());
             this.bmt && this.bmt.refresh();
-            bookConfig.ThumbnailsButtonVisible && (thumbnail.clearHighLight(), thumbnail.setHighLight(this.currentPageIndex));
+            bookConfig.ThumbnailsButtonVisible && (thumbnail.clearHighLight(), thumbnail.setHighLightThumb(this.currentPageIndex));
             resizeBookAfterFlip && !this.flipping && window.setTimeout(function () {
                 onStageResize()
             }, 30);
@@ -45625,7 +45627,7 @@ var DoubleFlipBook = Class({
             this.stopAllSlider();
             this.flipping || (this.openShownSlider(), this.openShownMedia());
             this.bmt && this.bmt.refresh();
-            bookConfig.ThumbnailsButtonVisible && (thumbnail.clearHighLight(), thumbnail.setHighLight(this.currentPageIndex));
+            bookConfig.ThumbnailsButtonVisible && (thumbnail.clearHighLight(), thumbnail.setHighLightThumb(this.currentPageIndex));
             resizeBookAfterFlip && !this.flipping && window.setTimeout(function () {
                 onStageResize()
             }, 30);
@@ -47952,7 +47954,7 @@ var ZoomControlBar = Class({
                 this.openShownSlider();
             this.flipping || this.openShownMedia();
             bookConfig.ThumbnailsButtonVisible && thumbnail.clearHighLight();
-            bookConfig.ThumbnailsButtonVisible && thumbnail.setHighLight(this.getRealPageIndex());
+            bookConfig.ThumbnailsButtonVisible && thumbnail.setHighLightThumb(this.getRealPageIndex());
             resizeBookAfterFlip && !this.flipping && window.setTimeout(function () {
                 onStageResize()
             }, 30);
@@ -49735,7 +49737,7 @@ function changeShowBookByWindow() {
     resizeFlipBook();
     resizeCatalogBook();
     resizeSlideBook();
-    d && (gotoPageFun(c), setCurrentIndexTextField(c, b), global.thumbnail && thumbnail.clearHighLight(), global.thumbnail && thumbnail.setHighLight(c))
+    d && (gotoPageFun(c), setCurrentIndexTextField(c, b), global.thumbnail && thumbnail.clearHighLight(), global.thumbnail && thumbnail.setHighLightThumb(c))
 }
 
 function initEvents() {
@@ -51872,9 +51874,9 @@ var ThumbnailCell = Class({
         this.title.hide();
         this.item.removeClass("focus")
     },
-    setHighLight: function (b) {
-        this.index ==
-            b && this.item.addClass("highlight")
+    setHighLightThumb: function (b) {
+        this.index == b && this.item.addClass("highlight")
+        console.log("thumb: " + this.item)
     },
     clearHighLight: function () {
         this.item.removeClass("highlight")
@@ -51956,8 +51958,8 @@ var ThumbnailItem = Class({
             left: "auto"
         }), this.cells[0].addClass("left"), this.cells[1].addClass("right"))
     },
-    setHighLight: function (b) {
-        for (var c = 0; c < this.cells.length; c++) this.cells[c].setHighLight(b);
+    setHighLightThumb: function (b) {
+        for (var c = 0; c < this.cells.length; c++) this.cells[c].setHighLightThumb(b);
         this.item.addClass("highlight")
     },
     clearHighLight: function () {
@@ -52072,9 +52074,9 @@ var ThumbnailFrame = Class({
     clearHighLight: function () {
         $(".highlight").removeClass("highlight")
     },
-    setHighLight: function (b) {
+    setHighLightThumb: function (b) {
         $(".highlight").removeClass("highlight");
-        for (var c = 0; c < this.itemArray.length; c++) 0 <= this.itemArray[c].pages.indexOf(b) && this.itemArray[c].setHighLight(b);
+        for (var c = 0; c < this.itemArray.length; c++) 0 <= this.itemArray[c].pages.indexOf(b) && this.itemArray[c].setHighLightThumb(b);
         window.setTimeout(this.thumbnailSwiper.animateToCenterItem, 10)
     },
     getShowStatu: function () {
@@ -52124,7 +52126,7 @@ var ThumbnailFrame = Class({
         return [c, d]
     },
     show: function () {
-        this.setHighLight(BookInfo.getCurrentPageIndex());
+        this.setHighLightThumb(BookInfo.getCurrentPageIndex());
         this.visible = !0;
         this.stage.show();
         this.refresh();
@@ -52204,7 +52206,9 @@ var GalleryCell = Class({
     },
     initEvent: function () {
         this.item.onTap(function () {
-            gotoPageFun(this.index)
+            //console.log(this.item[0].children[0].src)
+            var src = this.item[0].children[0].src;
+            $("#imgFocus").attr("src", src);
         }.bind(this))
     },
     fillContent: function () {
@@ -52216,6 +52220,9 @@ var GalleryCell = Class({
             });
             this.unLoading()
         }.bind(this);
+        if($(this.item).hasClass("first")){
+            $("#imgFocus").attr("src", bookConfig.galleryPath+this.index+".jpg");
+        }
         fillImageAfterLoaded(this.index, "gallery", b)
     },
     getDom: function () {
@@ -52229,13 +52236,12 @@ var GalleryCell = Class({
         //this.title.hide();
         this.item.removeClass("focus")
     },
-    setHighLight: function (b) {
-        this.index ==
-            b && this.item.addClass("highlight")
+    setFirst: function (b) {
+        this.index == b && this.item.addClass("first")        
     },
-    clearHighLight: function () {
+    /* clearHighLight: function () {
         this.item.removeClass("highlight")
-    }
+    } */
 });
 var GalleryItem = Class({
     create: function (b, c) {
@@ -52313,14 +52319,14 @@ var GalleryItem = Class({
             left: "auto"
         }), this.cells[0].addClass("left"), this.cells[1].addClass("right"))
     },
-    setHighLight: function (b) {
-        for (var c = 0; c < this.cells.length; c++) this.cells[c].setHighLight(b);
-        this.item.addClass("highlight")
+    setFirst: function (b) {
+        for (var c = 0; c < this.cells.length; c++) this.cells[c].setFirst(b);
+        this.item.addClass("first")
     },
-    clearHighLight: function () {
+    /* clearHighLight: function () {
         this.item.removeClass("highlight");
         for (var b = 0; b < this.cells.length; b++) this.cells[b].clearHighLight()
-    }
+    } */
 });
 
 var GalleryFrame = Class({
@@ -52357,12 +52363,13 @@ var GalleryFrame = Class({
     },
     initSwiper: function () {
         this.galleryFocus = $("<div class='galleryFocus'></div>");
+        this.galleryImg = $("<img id='imgFocus' class='galleryImg'>")
         this.gallerySwiper = $("<div class='gallerySwiper stage'></div>");
         this.gallerySwiperList = $("<div class='swiper'></div>");
         this.progress = $("<div class='progress'></div>");
-        this.progressBar =
-            $("<div class='progressBar'></div>");
+        this.progressBar = $("<div class='progressBar'></div>");
         this.refreshSwiper(this.gallerySwiperList);
+        this.galleryFocus.append(this.galleryImg);
         this.gallerySwiper.append(this.gallerySwiperList);
         this.gallerySwiper.append(this.progress);
         this.progress.append(this.progressBar)
@@ -52385,12 +52392,16 @@ var GalleryFrame = Class({
             var b = this.gallerySwiperList.width();
             this.gallerySwiper.css({
                 width: b + "px",
-                margin: "20px " + (windowWidth - b) / 2 + "px"
+                //margin: "20px " + (windowWidth - b) / 2 + "px"
+            });
+            this.galleryFocus.css({
+                width: b + "px",
+                //margin: "20px " + (windowWidth - b) / 2 + "px"
             });
             this.height = 220
         } else this.gallerySwiper.css({
             width: "auto",
-            margin: "20px"
+            //margin: "20px"
         }), this.height = 254;
         this.refresh();
         /* this.stage.css({
@@ -52428,12 +52439,13 @@ var GalleryFrame = Class({
         this.length += d.margin;
         this.itemArray.push(d)
     },
-    clearHighLight: function () {
+    /* clearHighLight: function () {
         $(".highlight").removeClass("highlight")
-    },
-    setHighLight: function (b) {
-        $(".highlight").removeClass("highlight");
-        for (var c = 0; c < this.itemArray.length; c++) 0 <= this.itemArray[c].pages.indexOf(b) && this.itemArray[c].setHighLight(b);
+    }, */
+    setFirst: function (b) {
+        //$(".highlight").removeClass("highlight");
+        for (var c = 0; c < this.itemArray.length; c++) 0 <= this.itemArray[c].pages.indexOf(b) && this.itemArray[c].setFirst(b);
+
         window.setTimeout(this.gallerySwiper.animateToCenterItem, 10)
     },
     getShowStatu: function () {
@@ -52450,7 +52462,12 @@ var GalleryFrame = Class({
         return 0
     },
     showOrHide: function () {
-        this.visible ? this.hide() : this.show()
+        //this.visible ? this.hide() : this.show()
+        if(this.visible){
+            this.hide()
+        }else{
+            this.show()
+        }
     },
     fillImage: function (b) {
         this.itemArray && this.itemArray[b] && !this.itemArray[b].fill && (this.itemArray[b].fillContent(), this.itemArray[b].fill = !0)
@@ -52484,7 +52501,7 @@ var GalleryFrame = Class({
         return [c, d]
     },
     show: function () {
-        this.setHighLight(BookInfo.getCurrentPageIndex());
+        this.setFirst(BookInfo.getCurrentPageIndex());
         this.visible = !0;
         this.stage.show();
         this.refresh();
@@ -52503,10 +52520,11 @@ var GalleryForm = Class({
         this._super(b)
     },
     initHtml: function () {
-        this.stage = $("<div class='gallery_win10'></div>");
-        this.stage.append(this.close);
+        this.stage = $("<div id='gallery' class='gallery_win10'></div>");
+        this.stage.append(this.galleryFocus);
+        this.galleryFocus.append(this.close);
         this.stage.append(this.gallerySwiper);
-        this.parent.append(this.stage)
+        this.parent.append(this.stage);
     }
 }).extend(GalleryFrame);
 var toolbar_icons = {
@@ -53085,7 +53103,7 @@ Class("PCExtendedBar", {
         })
     }
 }).extend("ExtendedBar");
-var CatalogThumbnailItem = Class({
+/* var CatalogThumbnailItem = Class({
     create: function (b, c, d) {
         this.itemContent = b;
         this.dockMenuContent = c;
@@ -53194,14 +53212,14 @@ var CatalogThumbnailItem = Class({
     clearHighLight: function () {
         this.dockMenu.clearHighLight()
     },
-    setHighLight: function (b) {
-        this.dockMenu.setHighLight(b)
+    setHighLightThumb: function (b) {
+        this.dockMenu.setHighLightThumb(b)
     },
     onResize: function () {
         this.dockMenu.resize()
     }
-});
-var CatalogThumbnailBar = Class({
+}); */
+/* var CatalogThumbnailBar = Class({
     create: function (b) {
         this.menu = $("<div class='menu'></div>");
         this.initMenu();
@@ -53231,7 +53249,7 @@ var CatalogThumbnailBar = Class({
                 f = Math.min(10 * (f + 1) - 1, b.length - 1);
             g.initItem(h, f);
             this.itemArray.push(g)
-        }(this.highLightItem = this.currentItem = this.itemArray[rightToLeft ? c - 1 : 0]) && this.highLightItem.setHighLight(1);
+        }(this.highLightItem = this.currentItem = this.itemArray[rightToLeft ? c - 1 : 0]) && this.highLightItem.setHighLightThumb(1);
         this.highLightItem && this.highLightItem.show()
     },
     gotoItemByIndex: function (b) {
@@ -53297,17 +53315,17 @@ var CatalogThumbnailBar = Class({
         this.highLightItem &&
             this.highLightItem.clearHighLight()
     },
-    setHighLight: function (b) {
+    setHighLightThumb: function (b) {
         for (var c = 0; c < this.itemArray.length; c++)
             if (b <= this.itemArray[c].toIndex && b >= this.itemArray[c].fromIndex) {
                 this.gotoItemByIndex(c);
-                this.itemArray[c].setHighLight(b);
+                this.itemArray[c].setHighLightThumb(b);
                 this.highLightItem = this.currentItem;
                 break
             }
     },
     fillContent: function () {
-        this.setHighLight(this.highLightItem.index)
+        this.setHighLightThumb(this.highLightItem.index)
     },
     showOrHide: function () {
         !1 === this.visible ? this.show() : this.hide();
@@ -53336,9 +53354,9 @@ var CatalogThumbnailBar = Class({
     getBottomHeight: function () {
         return !0 == this.visible ? 110 : 0
     }
-});
+}); */
 
-var CatalogGalleryItem = Class({
+/* var CatalogGalleryItem = Class({
     create: function (b, c, d) {
         this.itemContent = b;
         this.dockMenuContent = c;
@@ -53447,8 +53465,8 @@ var CatalogGalleryItem = Class({
     clearHighLight: function () {
         this.dockMenu.clearHighLight()
     },
-    setHighLight: function (b) {
-        this.dockMenu.setHighLight(b)
+    setHighLightGallery: function (b) {
+        this.dockMenu.setHighLightGallery(b)
     },
     onResize: function () {
         this.dockMenu.resize()
@@ -53485,7 +53503,7 @@ var CatalogGalleryBar = Class({
                 f = Math.min(10 * (f + 1) - 1, b.length - 1);
             g.initItem(h, f);
             this.itemArray.push(g)
-        }(this.highLightItem = this.currentItem = this.itemArray[rightToLeft ? c - 1 : 0]) && this.highLightItem.setHighLight(1);
+        }(this.highLightItem = this.currentItem = this.itemArray[rightToLeft ? c - 1 : 0]) && this.highLightItem.setHighLightGallery(1);
         this.highLightItem && this.highLightItem.show()
     },
     gotoItemByIndex: function (b) {
@@ -53551,17 +53569,17 @@ var CatalogGalleryBar = Class({
         this.highLightItem &&
             this.highLightItem.clearHighLight()
     },
-    setHighLight: function (b) {
+    setHighLightGallery: function (b) {
         for (var c = 0; c < this.itemArray.length; c++)
             if (b <= this.itemArray[c].toIndex && b >= this.itemArray[c].fromIndex) {
                 this.gotoItemByIndex(c);
-                this.itemArray[c].setHighLight(b);
+                this.itemArray[c].setHighLightGallery(b);
                 this.highLightItem = this.currentItem;
                 break
             }
     },
     fillContent: function () {
-        this.setHighLight(this.highLightItem.index)
+        this.setHighLightGallery(this.highLightItem.index)
     },
     showOrHide: function () {
         !1 === this.visible ? this.show() : this.hide();
@@ -53590,7 +53608,7 @@ var CatalogGalleryBar = Class({
     getBottomHeight: function () {
         return !0 == this.visible ? 110 : 0
     }
-});
+}); */
 
 var GuidToolbar = Class({
     create: function (b) {
@@ -54060,7 +54078,7 @@ var SlideThumbnailItem = Class({
         this.itemB.hideBorder()
     },
     onItemMouseUp: function (b) {
-        isThumbDrag || (b = b.getPageIndex(), gotoPageFun(b), thumbnail && thumbnail.setHighLight(b))
+        isThumbDrag || (b = b.getPageIndex(), gotoPageFun(b), thumbnail && thumbnail.setHighLightThumb(b))
     },
     highLight: function (b) {
         this.isMerge ? 1 == b || b == totalPageCount ? (this.itemA.highLight("#ffffff"), this.itemA.onMouseOverUp()) : ($(this.imageBac).css({
@@ -54268,13 +54286,13 @@ var isThumbDrag = !1,
             for (var b = 0; b < this.thumbArray.length; b++) this.thumbArray[b].merge();
             this.resetItemPosition();
             this.clearHighLight(this.getPageIndex());
-            this.setHighLight(this.getPageIndex())
+            this.setHighLightThumb(this.getPageIndex())
         },
         repositionSingle: function () {
             for (var b = 0; b < this.thumbArray.length; b++) this.thumbArray[b].fission();
             this.resetItemPosition();
             this.clearHighLight(this.getPageIndex());
-            this.setHighLight(this.getPageIndex())
+            this.setHighLightThumb(this.getPageIndex())
         },
         getShowStatu: function () {
             return this.showing
@@ -54290,7 +54308,7 @@ var isThumbDrag = !1,
             this.createThumbItemFalg && this.currentMedo != this.oldMode && 1 === this.currentMedo && this.repositionSingle();
             this.createThumbItemFalg && this.currentMedo != this.oldMode && 2 === this.currentMedo && this.repositionDouble();
             this.createThumbItemFalg || (this.createThumbItemFalg = !0, this.addItem(), 1 === this.currentMedo ? this.repositionSingle() :
-                this.repositionDouble(), this.initEvent(), this.onResize(), this.setHighLight(this.getPageIndex()), this.fillNearByImages(0));
+                this.repositionDouble(), this.initEvent(), this.onResize(), this.setHighLightThumb(this.getPageIndex()), this.fillNearByImages(0));
             this.oldMode = this.currentMedo;
             $(this.background).animate({
                 bottom: 0
@@ -54347,7 +54365,7 @@ var isThumbDrag = !1,
                 b.mouseDown = !1
             })
         },
-        setHighLight: function (b) {
+        setHighLightThumb: function (b) {
             this.currentCellIndex = b;
             this.setPageIndex(b);
             if (this.createThumbItemFalg) {
@@ -54559,7 +54577,7 @@ var PhoneThumbnailForm = Class({
         this.background.append(this.itemBox);
         this.initEvent();
         this.addItem();
-        this.setHighLight(BookInfo.getCurrentPageIndex())
+        this.setHighLightThumb(BookInfo.getCurrentPageIndex())
     },
     onResize: function () {
         this.countHorizatal = parseInt((windowWidth - this.marginLeft) / (this.itemWidth + this.marginLeft));
@@ -54625,7 +54643,7 @@ var PhoneThumbnailForm = Class({
             this.visible = !0
         }.bind(this)))
     },
-    setHighLight: function (b) {
+    setHighLightThumb: function (b) {
         this.itemArray &&
             this.itemArray[b - 1] && this.itemArray[b - 1].imgContainer && this.itemArray[b - 1].imgContainer.css({
                 "border-color": this.itemBorderColor
